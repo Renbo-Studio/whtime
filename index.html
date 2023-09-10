@@ -59,6 +59,7 @@ body{
   margin-left: 15px;
   font-weight: 600;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  transition: all 0.3s ease-in-out; /* Add animation to time change */
 }
 
 .time-sub-text {
@@ -102,6 +103,7 @@ body{
   appearance: none;
   cursor: pointer;
   font-weight: 700;
+  transition: background-color 0.3s ease-in-out; /* Add animation to select change */
 }
 
 .select-wrapper select:focus {
@@ -112,81 +114,78 @@ body{
 <body class="gradient-background">
     <div class="card">
         <div class="select-wrapper">
-          <select id="country-selector">
-            <!-- Options will be dynamically populated using JavaScript -->
+          <select id="country-selector" onchange="updateTimeBasedOnCountry()">
           </select>
         </div>
-        <p class="time-text"><span>11:11</span><span class="time-sub-text">PM</span></p>
-        <p class="day-text">Wednesday, June 15th</p>
+        <p class="time-text" id="time-text"><span>11:11</span><span class="time-sub-text">PM</span></p>
+        <p class="day-text" id="day-text">Wednesday, June 15th</p>
         <i class="moon fas fa-moon"></i>
     </div>
 </body>
 <script>
-// Function to update the time based on the selected country
-function updateTimeBasedOnCountry() {
-  const selectedCountryCode = document.getElementById('country-selector').value;
+ async function updateTimeBasedOnCountry() {
+    try {
+      const selectedTimezone = document.getElementById('country-selector').value;
 
-  // Fetch the time zone offset for the selected country using the TimeZoneDB API
-  const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-  const apiUrl = `https://api.timezonedb.com/v2.1/get-time-zone?key=TNEMZ3C7IRXR&format=json&by=countryCode&countryCode=${selectedCountryCode}`;
+      // Fetch the current time for the selected timezone using the WorldTimeAPI
+      const apiUrl = `https://worldtimeapi.org/api/timezone/${selectedTimezone}`;
 
-  
-  fetch(proxyUrl + apiUrl)
-  .then(response => response.json())
-    .then(data => {
-      const utcOffsetMinutes = data.gmtOffset / 60;
+      const response = await fetch(apiUrl);
+      const data = await response.json();
 
-      // Calculate the local time based on UTC and the offset
-      const currentTime = new Date();
-      const localTime = new Date(currentTime.getTime() + utcOffsetMinutes * 60000);
+      // Extract the local time from the API response
+      const localTime = new Date(data.utc_datetime);
 
       // Format the local time for display
-      const hours = localTime.getHours();
-      const minutes = localTime.getMinutes();
-      const seconds = localTime.getSeconds();
+      const hours = localTime.getUTCHours(); // Use getUTCHours() instead of getHours()
+      const minutes = localTime.getUTCMinutes(); // Use getUTCMinutes() instead of getMinutes()
+      const seconds = localTime.getUTCSeconds(); // Use getUTCSeconds() instead of getSeconds()
       const ampm = hours >= 12 ? 'PM' : 'AM';
       const formattedTime = `${hours % 12}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} ${ampm}`;
 
-      // Update the time displayed in the card
-      const timeText = document.querySelector('.time-text');
-      timeText.textContent = formattedTime;
-    })
-    .catch(error => {
+      // Update the time displayed in the card with a fade animation
+      const timeText = document.getElementById('time-text');
+      timeText.style.opacity = 0.2; // Fade out
+      setTimeout(() => {
+        timeText.textContent = formattedTime; // Update the time
+        timeText.style.opacity = 1; // Fade in
+      }, 300);
+
+      // Update the date
+      const currentDate = localTime.toDateString();
+      const dayText = document.getElementById('day-text');
+      dayText.textContent = currentDate;
+    } catch (error) {
       console.error('Error fetching data:', error);
-    });
-}
-
-setInterval(() => {
-  updateTimeBasedOnCountry()
-}, 1000);
-
-// Call the updateTimeBasedOnCountry function when the page loads to initialize the time
-window.addEventListener('load', updateTimeBasedOnCountry);
-
-// Add event listener to update time when the select option changes
-document.getElementById('country-selector').addEventListener('change', updateTimeBasedOnCountry);
-
-// Function to fetch countries from the REST Countries API and populate the select options
-async function fetchCountriesAndTimes() {
-  try {
-    const response = await fetch('https://restcountries.com/v3.1/all'); // REST Countries API endpoint
-    const data = await response.json();
-    const countrySelector = document.getElementById('country-selector');
-
-    // Populate select options with country names and codes
-    data.forEach((country) => {
-      const option = document.createElement('option');
-      option.value = country.cca2; // Use the country code as a unique identifier
-      option.textContent = country.name.common;
-      countrySelector.appendChild(option);
-    });
-  } catch (error) {
-    console.error('Error fetching data:', error);
+    }
   }
-}
 
-// Call the fetchCountriesAndTimes function to initialize the country selector
-fetchCountriesAndTimes();
+  async function fetchCountriesAndTimezones() {
+    try {
+      const response = await fetch('countries.json'); // JSON file containing country codes and timezones
+      const data = await response.json();
+      const countrySelector = document.getElementById('country-selector');
+
+      // Populate select options with country names and timezone identifiers
+      data.forEach((country) => {
+        const option = document.createElement('option');
+        option.value = country.timezone; // Use the timezone identifier
+        option.textContent = country.name;
+        countrySelector.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+
+  // Initialize the page: Fetch countries and set up event listeners
+  window.addEventListener('load', () => {
+    fetchCountriesAndTimezones(); // Fetch countries and timezones when the page loads
+    updateTimeBasedOnCountry(); // Initialize the time based on the default selected timezone
+  });
+
+  // Periodically update the time every second
+  setInterval(updateTimeBasedOnCountry, 1000);
 
 </script>
 </html>

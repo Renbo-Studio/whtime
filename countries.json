@@ -1,0 +1,59 @@
+[
+    {
+      "name": "United States",
+      "timezone": "America/New_York"
+    },
+    {
+      "name": "Canada",
+      "timezone": "America/Toronto"
+    },
+    {
+      "name": "United Kingdom",
+      "timezone": "Europe/London"
+    },
+    {
+      "name": "Nepal",
+      "timezone": "Asia/Kathmandu"
+    },
+    {
+      "name": "Australia",
+      "timezone": "Australia/Sydney"
+    },
+    {
+      "name": "India",
+      "timezone": "Asia/Kolkata"
+    },
+    {
+      "name": "China",
+      "timezone": "Asia/Shanghai"
+    },
+    {
+      "name": "Japan",
+      "timezone": "Asia/Tokyo"
+    },
+    {
+      "name": "Brazil",
+      "timezone": "America/Sao_Paulo"
+    },
+    {
+      "name": "Russia",
+      "timezone": "Europe/Moscow"
+    },
+    {
+      "name": "Germany",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "name": "France",
+      "timezone": "Europe/Paris"
+    },
+    {
+      "name": "South Africa",
+      "timezone": "Africa/Johannesburg"
+    },
+    {
+      "name": "Mexico",
+      "timezone": "America/Mexico_City"
+    }
+  ]
+  
